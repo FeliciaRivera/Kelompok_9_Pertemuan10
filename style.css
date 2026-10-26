@@ -290,3 +290,163 @@ kbd {
   background: var(--strong);
   color: #062b1c;
 }
+
+/* 7. METERAN KEKUATAN [DOM][PLUS] */
+.meter {
+  height: 12px;
+  border-radius: 999px;
+  background: var(--neutral);
+  overflow: hidden;
+}
+
+.meter__fill {
+  height: 100%;
+  width: 0%;                         /* Lebar diatur oleh JS: style.width */
+  border-radius: inherit;
+  background: var(--neutral);
+  transition: width .4s ease, background-color .4s ease;
+}
+
+/* 8. BADGE LEVEL & STATE WARNA [DOM] */
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.badge {
+  font-weight: 600;
+  font-size: .9rem;
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 2px solid var(--neutral);
+  color: var(--text-muted);
+  transition: all .3s;
+}
+
+.score {
+  font-family: var(--font-mono);
+  font-size: .85rem;
+  color: var(--text-muted);
+}
+
+/* Class ini dipasang/dilepas JS melalui classList sesuai level */
+.meter.is-weak   .meter__fill { background: var(--weak); }
+.meter.is-medium .meter__fill { background: var(--medium); }
+.meter.is-strong .meter__fill { background: var(--strong); }
+
+.input-wrapper.is-weak   { border-color: var(--weak);   box-shadow: 0 0 0 4px rgba(255, 77, 94, .15); }
+.input-wrapper.is-medium { border-color: var(--medium); box-shadow: 0 0 0 4px rgba(255, 197, 61, .15); }
+.input-wrapper.is-strong { border-color: var(--strong); box-shadow: 0 0 0 4px rgba(46, 229, 157, .15); }
+
+.badge.is-weak   { background: var(--weak);   border-color: var(--weak);   color: #fff; }
+.badge.is-medium { background: var(--medium); border-color: var(--medium); color: #3a2a00; }
+.badge.is-strong { background: var(--strong); border-color: var(--strong); color: #062b1c; }
+
+/* 9. STATISTIK, CHECKLIST, SARAN, PESAN */
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.stats__item {
+  background: var(--field);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stats__label {
+  font-size: .72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.stats__value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.criteria {
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.criteria li {
+  font-size: .9rem;
+  color: var(--text-muted);
+  padding-left: 28px;
+  position: relative;
+  transition: color .25s;
+}
+
+.criteria li::before {
+  content: "\2715";                  /* tanda silang */
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: .7rem;
+  background: var(--neutral);
+  color: var(--text);
+  transition: background-color .25s;
+}
+
+/* [DOM][PLUS] Kriteria terpenuhi -> class "met" dari JS */
+.criteria li.met {
+  color: var(--text);
+}
+
+.criteria li.met::before {
+  content: "\2713";                  /* tanda centang */
+  background: var(--strong);
+  color: #062b1c;
+}
+
+/* Disembunyikan secara default; JS mengatur style.display */
+.feedback {
+  display: none;
+  font-size: .85rem;
+  line-height: 1.5;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border-left: 4px solid var(--medium);
+  background: rgba(255, 197, 61, .08);
+}
+
+.feedback ul {
+  padding-left: 18px;
+  margin-top: 4px;
+}
+
+.feedback--danger {
+  border-left-color: var(--weak);
+  background: rgba(255, 77, 94, .1);
+}
+
+.message {
+  display: none;
+  font-size: .85rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border-left: 4px solid var(--strong);
+  background: rgba(46, 229, 157, .1);
+}
+
+.message--error {
+  border-left-color: var(--weak);
+  background: rgba(255, 77, 94, .1);
+}
+
