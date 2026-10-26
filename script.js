@@ -314,3 +314,233 @@ function handlePasswordInput() {
   console.log('Hasil analisis:', result.level, result.score);     // Debug di Console (modul: console.log)
 }
 
+// 5. FUNGSI LOGIKA: GENERATOR PASSWORD
+
+/** Mengambil satu karakter acak dari sebuah string.  [LOGIKA] */
+function randomChar(chars) {
+  const index = Math.floor(Math.random() * chars.length);         // [LOGIKA] indeks acak 0..panjang-1
+  return chars[index];
+}
+
+/** Mengecek apakah minimal satu opsi karakter dicentang.  [LOGIKA] */
+function isAnyOptionChecked() {
+  return optUpper.checked || optLower.checked || optNumber.checked || optSymbol.checked; // [LOGIKA] OR
+}
+
+/**
+ * Membuat password acak.  [LOGIKA]
+ * do...while : ulangi pembuatan sampai SEMUA jenis yang dicentang
+ * benar-benar muncul, sehingga password yang dihasilkan selalu kuat.
+ */
+function generatePassword(length, options) {
+  let pool = '';                                                  // [LOGIKA] gabungan karakter
+  if (options.upper)  pool += CHARSET.upper;                      // [LOGIKA] concatenation string
+  if (options.lower)  pool += CHARSET.lower;
+  if (options.number) pool += CHARSET.number;
+  if (options.symbol) pool += CHARSET.symbol;
+
+  let password;
+  let check;
+  do {                                                            // [LOGIKA] do...while
+    password = '';
+    for (let i = 0; i < length; i++) {                            // [LOGIKA] for sebanyak panjang
+      password += randomChar(pool);
+    }
+    check = checkCriteria(password);                              // [LOGIKA] pakai ulang fungsi pemeriksa
+  } while (
+    (options.upper  && !check.upper)  ||
+    (options.lower  && !check.lower)  ||
+    (options.number && !check.number) ||
+    (options.symbol && !check.symbol)
+  );
+
+  return password;
+}
+
+/** Handler submit form generator.  [EVENT][LOGIKA][DOM] */
+function handleGenerate(event) {
+  event.preventDefault();                                         // [EVENT] cegah reload halaman (modul submit)
+
+  if (!isAnyOptionChecked()) {                                    // [LOGIKA] validasi
+    showMessage(generatorMsg, 'Pilih minimal satu jenis karakter.', true); // [DOM]
+    return;
+  }
+
+  const length = Number(lengthSlider.value);                      // [INPUT] nilai slider (String -> Number)
+  const options = {                                               // [INPUT] baca checkbox ke Object
+    upper:  optUpper.checked,
+    lower:  optLower.checked,
+    number: optNumber.checked,
+    symbol: optSymbol.checked
+  };
+
+  const newPassword = generatePassword(length, options);          // [LOGIKA]
+
+  passwordInput.value = newPassword;                              // [DOM] isi kolom input
+  setVisibility(true);                                            // [DOM] tampilkan agar terlihat
+  handlePasswordInput();                                          // [LOGIKA][DOM] langsung dianalisis
+  addToHistory(newPassword);                                      //  simpan ke riwayat
+  const level = analyzePassword(newPassword).level;                              // [LOGIKA] cek level hasil generate
+  if (level === 'weak') {
+    showMessage(generatorMsg, 'Password dibuat, tapi masih lemah. Centang lebih banyak jenis karakter atau tambah panjangnya.', true); // [DOM]
+  } else {
+    showMessage(generatorMsg, `Password ${length} karakter berhasil dibuat.`, false); // [DOM]
+  }
+}
+
+// 6. FITUR PLUS POINT
+
+/**  Show / Hide password: setAttribute + tukar ikon mata */
+function setVisibility(show) {
+  passwordInput.setAttribute('type', show ? 'text' : 'password'); // [DOM] ubah atribut type
+  if (show) {
+    iconEye.classList.add('hidden');                              // [DOM] sembunyikan ikon mata
+    iconEyeOff.classList.remove('hidden');                        // [DOM] tampilkan ikon mata dicoret
+  } else {
+    iconEye.classList.remove('hidden');
+    iconEyeOff.classList.add('hidden');
+  }
+  toggleVisibility.setAttribute('title', show ? 'Sembunyikan password' : 'Tampilkan password'); // [DOM]
+}
+
+/**  Copy to Clipboard: teks tombol menjadi "Copied!" selama 2 detik */
+function handleCopy() {
+  const pwd = passwordInput.value;                                // [INPUT]
+
+  if (pwd === '') {                                               // [LOGIKA] tidak ada yang disalin
+    showMessage(checkerMsg, 'Belum ada password untuk disalin.', true); // [DOM]
+    return;
+  }
+  if (copyText.textContent === 'Copied!') return;                 // [LOGIKA] cegah klik ganda
+
+  try {                                                           // [LOGIKA] try...catch
+    navigator.clipboard.writeText(pwd);                           // salin ke clipboard (Clipboard API)
+
+    copyText.textContent = 'Copied!';                             // [DOM] ubah teks tombol
+    copyBtn.classList.add('copied');                              // [DOM] ubah warna tombol
+    iconCopy.classList.add('hidden');                             // [DOM] tukar ikon
+    iconCheck.classList.remove('hidden');
+
+    setTimeout(() => {                                            // tunggu 2 detik (2000 ms)
+      copyText.textContent = 'Copy';                              // [DOM] kembali normal
+      copyBtn.classList.remove('copied');
+      iconCopy.classList.remove('hidden');
+      iconCheck.classList.add('hidden');
+    }, 2000);
+  } catch (error) {
+    showMessage(checkerMsg, 'Browser tidak mengizinkan penyalinan otomatis. Salin manual dengan Ctrl+C.', true); // [DOM]
+  }
+}
+
+/**  Riwayat: unshift & pop */
+function addToHistory(pwd) {
+  passwordHistory.unshift(pwd);                                   // [LOGIKA] tambah di depan
+  if (passwordHistory.length > MAX_HISTORY) {                     // [LOGIKA] batasi jumlah
+    passwordHistory.pop();                                        // [LOGIKA] buang yang paling lama
+  }
+  renderHistory();                                                // [DOM]
+}
+
+/**
+ *  Menampilkan riwayat dengan createElement + appendChild,
+ * lalu memasang event click memakai POLA YANG SAMA dengan listgroup.js di modul:
+ * querySelectorAll -> forEach -> addEventListener -> preventDefault -> hapus 'active' -> this.classList.add('active')
+ */
+function renderHistory() {
+  historyList.innerHTML = '';                                     // [DOM] kosongkan list
+
+  if (passwordHistory.length === 0) {                             // [LOGIKA]
+    const empty = document.createElement('li');                   // [DOM] createElement
+    empty.classList.add('history__empty');                     // [DOM] classList.add
+    empty.textContent = 'Belum ada password yang dibuat.';
+    historyList.appendChild(empty);                               // [DOM] appendChild
+    return;
+  }
+
+  passwordHistory.forEach((pwd, index) => {                       // [LOGIKA] forEach dengan index (modul)
+    const li = document.createElement('li');                      // [DOM] createElement
+    const link = document.createElement('a');                     // [DOM] createElement
+    link.classList.add('history__item');                       // [DOM] classList.add
+    link.setAttribute('href', '#');                               // [DOM] setAttribute
+    link.setAttribute('title', 'Klik untuk memakai password ini');
+    link.textContent = pwd;                                       // [DOM] textContent
+    if (index === 0) link.classList.add('active');                // [DOM] item terbaru ditandai
+    li.appendChild(link);                                         // [DOM] appendChild
+    historyList.appendChild(li);
+  });
+
+  const historyItems = document.querySelectorAll('#historyList .history__item'); // [DOM] querySelectorAll
+  historyItems.forEach(item => {                                  // [LOGIKA] forEach
+    item.addEventListener('click', function (e) {                 // [EVENT] click
+      e.preventDefault();                                         // [EVENT] cegah lompat ke "#"
+      historyItems.forEach(i => i.classList.remove('active'));    // [DOM] hapus highlight lama
+      this.classList.add('active');                               // [DOM] highlight item yang diklik
+
+      passwordInput.value = this.textContent;                     // [DOM] isi input
+      setVisibility(true);                                        // [DOM]
+      handlePasswordInput();                                      // [LOGIKA][DOM] analisis ulang
+    });
+  });
+}
+
+// 7. EVENT LISTENER  (addEventListener)
+
+// [EVENT] 'input' -> cek kekuatan password secara real-time setiap kali mengetik
+passwordInput.addEventListener('input', handlePasswordInput);
+
+// [EVENT] 'keydown' -> tekan Esc untuk mengosongkan kolom (event object: event.key)
+passwordInput.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {                                   // [LOGIKA]
+    passwordInput.value = '';                                     // [DOM]
+    handlePasswordInput();                                        // [DOM] reset tampilan
+  }
+});
+
+// [EVENT] 'submit' -> tombol "Generate Safe Password" di dalam form
+generatorForm.addEventListener('submit', handleGenerate);
+
+// [EVENT] 'click' -> Copy to Clipboard
+copyBtn.addEventListener('click', handleCopy);
+
+// [EVENT] 'click' -> tampilkan / sembunyikan password
+toggleVisibility.addEventListener('click', () => {
+  const isHidden = passwordInput.getAttribute('type') === 'password'; // [DOM] getAttribute
+  setVisibility(isHidden);                                            // [DOM]
+});
+
+// [EVENT] 'input' -> slider panjang: angka ikut berubah
+lengthSlider.addEventListener('input', () => {
+  lengthValue.textContent = lengthSlider.value;                   // [DOM] ubah teks angka
+});
+
+// [EVENT] 'click' pada checkbox -> cegah semua opsi tidak dicentang
+const optionBoxes = [optUpper, optLower, optNumber, optSymbol];   // [LOGIKA] Array elemen
+optionBoxes.forEach(box => {
+  box.addEventListener('click', () => {
+    if (!isAnyOptionChecked()) {                                  // [LOGIKA]
+      box.checked = true;                                         // [DOM] centang kembali
+      showMessage(generatorMsg, 'Minimal satu jenis karakter harus dipilih.', true); // [DOM]
+    } else {
+      hideMessage(generatorMsg);                                  // [DOM]
+    }
+  });
+});
+
+// [EVENT] 'click' -> hapus riwayat
+clearHistoryBtn.addEventListener('click', () => {
+  passwordHistory = [];                                           // [LOGIKA] kosongkan Array
+  renderHistory();                                                // [DOM]
+  hideMessage(generatorMsg);                                      // [DOM]
+});
+
+// [EVENT] 'click' -> ganti tema gelap / terang
+themeToggle.addEventListener('click', () => {
+  document.body.classList.toggle('light');                        // [DOM] classList.toggle
+  iconMoon.classList.toggle('hidden');                            // [DOM] tukar ikon bulan
+  iconSun.classList.toggle('hidden');                             // [DOM] tukar ikon matahari
+});
+
+// 8. INISIALISASI
+resetIndicator();                                                             // [DOM] tampilan awal
+document.getElementById('footerYear').textContent = new Date().getFullYear(); // [DOM] tahun otomatis di footer (Date)
+console.log('PassGuard siap digunakan');                                      // Debug di Console (F12)

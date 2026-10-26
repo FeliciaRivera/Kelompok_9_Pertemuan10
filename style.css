@@ -450,3 +450,222 @@ kbd {
   background: rgba(255, 77, 94, .1);
 }
 
+/* 10. GENERATOR */
+.generator {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.slider-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slider-row__value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: var(--accent);
+}
+
+.slider {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.options {
+  border: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.options legend {
+  margin-bottom: 8px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .88rem;
+  background: var(--field);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.option input {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+}
+
+.btn-primary {
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: .2px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), #8a5bff);
+  box-shadow: 0 8px 20px rgba(91, 140, 255, .35);
+  transition: transform .15s, box-shadow .2s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(91, 140, 255, .45);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* 11. RIWAYAT */
+.history__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.history__title {
+  font-size: .9rem;
+  font-weight: 600;
+}
+
+.btn-link {
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: .85rem;
+}
+
+.history__list {
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.history__item {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: .82rem;
+  color: var(--text);
+  text-decoration: none;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--field);
+  border: 1px solid var(--card-border);
+  overflow-wrap: anywhere;
+  transition: border-color .2s, transform .15s;
+}
+
+.history__item:hover {
+  border-color: var(--accent);
+  transform: translateX(3px);
+}
+
+/* [DOM] Item riwayat yang sedang dipilih (pola "active" dari modul) */
+.history__item.active {
+  border-color: var(--strong);
+  color: var(--strong);
+}
+
+.history__empty {
+  font-size: .85rem;
+  color: var(--text-muted);
+}
+
+/* 12. RESPONSIF */
+
+/* Laptop kecil (<= 1024px): sedikit rapatkan jarak */
+@media (max-width: 1024px) {
+  .app {
+    gap: 16px;
+  }
+
+  .card {
+    padding: 20px;
+  }
+}
+
+/* Tablet & HP (<= 860px): kartu ditumpuk satu kolom */
+@media (max-width: 860px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 24px 16px 40px;
+  }
+
+  .app__title {
+    font-size: 1.6rem;
+  }
+
+  .app__subtitle {
+    font-size: .85rem;
+  }
+
+  .options {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* HP (<= 480px) */
+@media (max-width: 480px) {
+  .app__header {
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .logo {
+    width: 36px;
+    height: 36px;
+  }
+
+  .app__title {
+    font-size: 1.4rem;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .card__title {
+    font-size: 1.05rem;
+  }
+
+  .input-wrapper {
+    padding: 6px 6px 6px 12px;
+  }
+
+  .input-wrapper__field {
+    font-size: .85rem;
+  }
+
+  /* Tombol Copy turun ke baris kedua dengan lebar penuh */
+  .input-wrapper {
+    flex-wrap: wrap;
+  }
+
+  .btn-copy {
+    width: 100%;
+    margin-top: 2px;
+  }
+
+  .options {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* HP sangat kecil (<= 340px) */
+@media (max-width: 340px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
+}
