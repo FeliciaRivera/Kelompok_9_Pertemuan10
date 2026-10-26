@@ -1,0 +1,292 @@
+/*
+  File          : style.css (tampilan halaman)
+ 
+  Tugas         : Mini Project JavaScript & DOM (Praktikum Terbimbing)
+  Mata Kuliah   : Pemrograman Antarmuka Pengguna — Pertemuan 10
+  Kelompok      : 9
+  Nama & NIM    : Deio Castello Sujati (825250002), Felicia Rivera (825250003), Muhammad Ubait Dhaifullah (825250012)
+  Program Studi : Sistem Informasi
+  Rumpun Topik  : Technology
+  Judul         : PassGuard — Password Strength Checker & Generator
+ 
+  Deskripsi:
+    Aplikasi web untuk memeriksa kekuatan password secara langsung, menampilkan level kekuatan password
+    (Weak / Medium / Strong) dan membuat password acak yang kuat.
+*/
+
+/* 1. VARIABEL WARNA */
+:root {
+  --bg: #070b16;
+  --bg-glow: #111a38;
+  --card: #18223f;
+  --card-border: #34437a;
+  --text: #f1f4ff;
+  --text-muted: #aab4da;
+  --field: #0e1530;
+  --accent: #5b8cff;
+  --accent-hover: #7aa2ff;
+
+  --weak: #ff4d5e;      /* Merah  = Lemah  */
+  --medium: #ffc53d;    /* Kuning = Sedang */
+  --strong: #2ee59d;    /* Hijau  = Kuat   */
+  --neutral: #4a5788;
+
+  --radius: 14px;
+  --font-ui: "Segoe UI", Arial, sans-serif;
+  --font-mono: Consolas, "Courier New", monospace;
+}
+
+/* Tema terang, diaktifkan JS lewat body.classList.toggle('light') */
+body.light {
+  --bg: #eef2fb;
+  --bg-glow: #dce5ff;
+  --card: #ffffff;
+  --card-border: #d6deef;
+  --text: #17203d;
+  --text-muted: #5d6888;
+  --field: #f5f7fd;
+  --neutral: #c9d2ea;
+}
+
+body.light .card {
+  box-shadow: 0 10px 30px rgba(23, 32, 61, .08);
+}
+
+/* 2. RESET & DASAR */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-ui);
+  color: var(--text);
+  background:
+    radial-gradient(circle at 15% 0%, var(--bg-glow) 0%, transparent 45%),
+    radial-gradient(circle at 100% 100%, var(--bg-glow) 0%, transparent 40%),
+    var(--bg);
+  background-attachment: fixed;
+  transition: background-color .3s, color .3s;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* 3. UTILITAS */
+.icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.icon--sm {
+  width: 16px;
+  height: 16px;
+}
+
+/* [DOM] Class untuk menyembunyikan elemen (ditambah/dihapus JS via classList) */
+.hidden {
+  display: none;
+}
+
+/* 4. LAYOUT & HEADER */
+.app {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 32px 16px 48px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+.app__header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo {
+  width: 44px;
+  height: 44px;
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.app__title {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -.3px;
+}
+
+.app__title span {
+  color: var(--accent);
+}
+
+.app__subtitle {
+  color: var(--text-muted);
+  font-size: .95rem;
+}
+
+.app__header .btn-icon {
+  margin-left: auto;
+}
+
+.app__footer {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: .8rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid var(--card-border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.app__footer-copy {
+  font-size: .85rem;
+  color: var(--text);
+}
+
+.app__footer-copy strong {
+  color: var(--accent);
+}
+
+.app__footer-meta {
+  font-size: .75rem;
+}
+
+/* 5. KARTU */
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .35);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card__title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.label {
+  font-size: .85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* 6. INPUT PASSWORD & TOMBOL */
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--field);
+  border: 2px solid var(--neutral);
+  border-radius: 12px;
+  padding: 6px 6px 6px 14px;
+  transition: border-color .3s, box-shadow .3s;
+}
+
+.input-wrapper__field {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: .92rem;
+  padding: 8px 0;
+}
+
+.input-wrapper__field::placeholder {
+  color: var(--text-muted);
+  opacity: .6;
+}
+
+.hint {
+  font-size: .78rem;
+  color: var(--text-muted);
+  margin-top: -6px;
+}
+
+kbd {
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  padding: 1px 6px;
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  background: var(--field);
+}
+
+.btn-icon {
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--card-border);
+  background: var(--card);
+  color: var(--text);
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  transition: transform .15s, color .2s;
+}
+
+.btn-icon:hover {
+  transform: translateY(-1px);
+  color: var(--accent);
+}
+
+.btn-icon--inline {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.btn-copy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  border-radius: 9px;
+  padding: 10px 14px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  font-size: .85rem;
+  min-width: 104px;
+  transition: background-color .2s;
+}
+
+.btn-copy:hover {
+  background: var(--accent-hover);
+}
+
+/* [DOM][PLUS] State tombol setelah berhasil menyalin ("Copied!") */
+.btn-copy.copied {
+  background: var(--strong);
+  color: #062b1c;
+}

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<!--
+  File          : index.html (struktur halaman)
+ 
+  Tugas         : Mini Project JavaScript & DOM (Praktikum Terbimbing)
+  Mata Kuliah   : Pemrograman Antarmuka Pengguna — Pertemuan 10
+  Kelompok      : 9
+  Nama & NIM    : Deio Castello Sujati (825250002), Felicia Rivera (825250003), Muhammad Ubait Dhaifullah (825250012)
+  Program Studi : Sistem Informasi
+  Rumpun Topik  : Technology
+  Judul         : PassGuard — Password Strength Checker & Generator
+ 
+  Deskripsi:
+    Aplikasi web untuk memeriksa kekuatan password secara langsung, menampilkan level kekuatan password
+    (Weak / Medium / Strong) dan membuat password acak yang kuat.
+-->
+
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PassGuard — Password Strength Checker &amp; Generator</title>
+
+  <!-- CSS eksternal (tidak inline) -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- JavaScript eksternal dengan "defer" (materi slide 18): dijalankan setelah HTML selesai dimuat -->
+  <script src="script.js" defer></script>
+</head>
+<body>
+
+  <main class="app">
+
+    <!-- HEADER -->
+    <header class="app__header">
+      <svg class="logo" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <polyline points="9 12 11 14 15 10"/>
+      </svg>
+      <div>
+        <h1 class="app__title">Pass<span>Guard</span></h1>
+        <p class="app__subtitle">Periksa kekuatan password secara real-time &amp; buat password yang aman.</p>
+      </div>
+
+      <!-- [EVENT] Tombol ganti tema gelap/terang (ikon bulan & matahari ditukar oleh JS) -->
+      <button type="button" id="themeToggle" class="btn-icon" title="Ganti tema" aria-label="Ganti tema">
+        <svg id="iconMoon" class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <svg id="iconSun" class="icon hidden" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- KARTU 1: PEMERIKSA PASSWORD -->
+    <section class="card" aria-labelledby="checkerTitle">
+      <h2 id="checkerTitle" class="card__title">Password Strength Checker</h2>
+
+      <label for="passwordInput" class="label">Ketik password Anda</label>
+
+      <!-- [DOM] Border pembungkus ini berubah warna sesuai level -->
+      <div id="inputWrapper" class="input-wrapper">
+        <!-- [INPUT] Kolom utama tempat pengguna mengetik password -->
+        <input type="password" id="passwordInput" class="input-wrapper__field"
+               placeholder="Contoh: Kopi#Pagi2026" autocomplete="off" spellcheck="false" maxlength="64">
+
+        <!-- [EVENT] Tombol tampilkan/sembunyikan password (ikon mata & mata dicoret) -->
+        <button type="button" id="toggleVisibility" class="btn-icon btn-icon--inline" title="Tampilkan password" aria-label="Tampilkan password">
+          <svg id="iconEye" class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <svg id="iconEyeOff" class="icon hidden" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+        </button>
+
+        <!-- [EVENT] Tombol Copy to Clipboard (teks berubah "Copied!" selama 2 detik) -->
+        <button type="button" id="copyBtn" class="btn-copy" title="Salin password">
+          <svg id="iconCopy" class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="9" y="9" width="13" height="13" rx="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          <svg id="iconCheck" class="icon icon--sm hidden" viewBox="0 0 24 24" aria-hidden="true">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span id="copyText">Copy</span>
+        </button>
+      </div>
+      <p class="hint">Tekan <kbd>Esc</kbd> untuk mengosongkan kolom.</p>
+
+      <!-- [DOM] Pesan informasi/error untuk kartu pemeriksa -->
+      <p id="checkerMsg" class="message"></p>
+
+      <!-- [DOM] Meteran (progress bar) kekuatan password -->
+      <div id="meterBar" class="meter" role="progressbar" aria-label="Kekuatan password" aria-valuemin="0" aria-valuemax="100">
+        <div id="meterFill" class="meter__fill"></div>
+      </div>
+
+      <!-- [DOM] Indikator teks level (Weak / Medium / Strong) dan skor -->
+      <div class="status-row">
+        <span id="strengthBadge" class="badge">Belum ada input</span>
+        <span id="scoreText" class="score">Skor: 0 / 100</span>
+      </div>
+
+      <!-- [DOM] Statistik ringkas -->
+      <div class="stats">
+        <div class="stats__item">
+          <span class="stats__label">Panjang</span>
+          <span id="lengthStat" class="stats__value">0 karakter</span>
+        </div>
+        <div class="stats__item">
+          <span class="stats__label">Jenis karakter</span>
+          <span id="typeStat" class="stats__value">0 / 4</span>
+        </div>
+      </div>
+
+      <!-- [DOM] Checklist kriteria; tiap <li> diberi class "met" oleh JS bila terpenuhi -->
+      <ul id="criteriaList" class="criteria">
+        <li data-rule="length">Minimal 8 karakter</li>
+        <li data-rule="lower">Mengandung huruf kecil (a–z)</li>
+        <li data-rule="upper">Mengandung huruf besar (A–Z)</li>
+        <li data-rule="number">Mengandung angka (0–9)</li>
+        <li data-rule="symbol">Mengandung simbol (!@#$…)</li>
+      </ul>
+
+      <!-- [DOM] Kotak saran; isinya dibuat dengan createElement oleh JS -->
+      <div id="feedbackBox" class="feedback"></div>
+    </section>
+
+    <!-- KARTU 2: GENERATOR PASSWORD -->
+    <section class="card" aria-labelledby="generatorTitle">
+      <h2 id="generatorTitle" class="card__title">Safe Password Generator</h2>
+
+      <!-- [EVENT] Form generator: ditangani event "submit" + preventDefault() (materi modul) -->
+      <form id="generatorForm" class="generator">
+
+        <!-- [INPUT] Slider panjang password -->
+        <div class="slider-row">
+          <label for="lengthSlider" class="label">Panjang password</label>
+          <!-- [DOM] Angka ini diperbarui saat slider digeser -->
+          <output id="lengthValue" for="lengthSlider" class="slider-row__value">16</output>
+        </div>
+        <input type="range" id="lengthSlider" class="slider" min="8" max="32" value="16">
+
+        <!-- [INPUT] Opsi jenis karakter -->
+        <fieldset class="options">
+          <legend class="label">Jenis karakter</legend>
+          <label class="option"><input type="checkbox" id="optUpper" checked> Huruf besar (A–Z)</label>
+          <label class="option"><input type="checkbox" id="optLower" checked> Huruf kecil (a–z)</label>
+          <label class="option"><input type="checkbox" id="optNumber" checked> Angka (0–9)</label>
+          <label class="option"><input type="checkbox" id="optSymbol" checked> Simbol (!@#$…)</label>
+        </fieldset>
+
+        <!-- [EVENT] Tombol utama untuk membuat password acak yang kuat -->
+        <button type="submit" id="generateBtn" class="btn-primary">Generate Safe Password</button>
+
+        <!-- [DOM] Pesan sukses/error untuk generator -->
+        <p id="generatorMsg" class="message"></p>
+      </form>
+
+      <!-- [DOM] Riwayat password (item dibuat dengan createElement) -->
+      <div class="history">
+        <div class="history__head">
+          <h3 class="history__title">Riwayat (5 terakhir)</h3>
+          <!-- [EVENT] Tombol hapus riwayat -->
+          <button type="button" id="clearHistoryBtn" class="btn-link">Hapus</button>
+        </div>
+        <ul id="historyList" class="history__list">
+          <li class="history__empty">Belum ada password yang dibuat.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="app__footer">
+      <p class="app__footer-note">Semua proses berjalan di browser Anda (client-side). Password tidak dikirim ke mana pun.</p>
+      <!-- [DOM] Tahun diisi otomatis oleh JS -->
+      <p class="app__footer-copy">&copy; <span id="footerYear">2026</span> <strong>PassGuard</strong>. Dibuat oleh Kelompok 9</p>
+      <p class="app__footer-meta">Pemrograman Antarmuka Pengguna</p>
+    </footer>
+  </main>
+
+</body>
+</html>
